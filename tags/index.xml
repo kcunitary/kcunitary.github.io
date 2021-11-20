@@ -2,9 +2,9 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Tags on Namaketa</title>
-    <link>http://192.168.1.66:1313/tags/</link>
+    <link>https://kcunitary.github.io/tags/</link>
     <description>Recent content in Tags on Namaketa</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>zh-cn</language><atom:link href="http://192.168.1.66:1313/tags/index.xml" rel="self" type="application/rss+xml" />
+    <language>zh-cn</language><atom:link href="https://kcunitary.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
   </channel>
 </rss>
