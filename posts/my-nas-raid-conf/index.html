@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-cn" lang="zh-cn">
+<head>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.89.3" />
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>我的存储最佳实践 &middot; Namaketa</title>
+  <meta name="description" content="" />
+
+  
+  <link type="text/css" rel="stylesheet" href="https://kcunitary.github.io/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="https://kcunitary.github.io/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="https://kcunitary.github.io/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="https://kcunitary.github.io/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.png">
+
+  
+  
+</head>
+
+  <body class="theme-base-0c ">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="https://kcunitary.github.io/"><h1>Namaketa</h1></a>
+      <p class="lead">
+       Anything I Interested 
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="https://kcunitary.github.io/">Home</a> </li>
+        <li><a href="https://github.com/kcunitary"> Github </a></li>
+      </ul>
+    </nav>
+
+    <p>&copy; 2021. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>我的存储最佳实践</h1>
+  <time datetime=2021-11-20T18:25:12&#43;0800 class="post-date">Sat, Nov 20, 2021</time>
+  <h1 id="起">起</h1>
+<p>嗯，去年入手了一台星际蜗牛矿机以后开始了NAS的折腾之路，研究不少linux下存储的方案。</p>
+<p>以下平台全都基于arch，因为无所不能的 arch wiki + pacman -Syu 升级实在方便。</p>
+<p>记录一下折腾过程中的各式碎碎念。</p>
+<h1 id="承">承</h1>
+<p>一些看的背景知识</p>
+<h2 id="1-文件系统">1. 文件系统</h2>
+<h3 id="brtfs">brtfs</h3>
+<hr>
+<p>brtfs 很长时间被看作 linux 官方社区钦定的ext4继承人，天命所归的下一代文件系统。然而早期无数严重的毁数据 bug 伤透了用户的心，几乎沦为了最臭名昭著的不稳定文件系统之一。</p>
+<p>对于我来说放弃brtfs的主要原因可能在于它依然孱弱的 raid 功能。raid 5/6 被标记为高危的，任何断电都会导致脏数据问题，raid 1 也是脆弱的，大量报告于它在损失一块硬盘后再面对断电和URE错误变得极端脆弱。</p>
+<p>而 wiki 不建议在 brtfs 下增加类似LVM MDADM的虚拟层，因为这起码会导致写放大等性能问题，但是 Synology 好像就是这么做的，把 brtfs 加入 lvm 和 SHR 上层进行管理，只能说他们可能做了一些 hack 有自信解决多层存储的整合问题。</p>
+<p>综上：</p>
+<ul>
+<li>
+<p>Advantages</p>
+<ul>
+<li>依然是得到社区最多期望的下一代文件系统，和新内核集成良好</li>
+<li>cow支持</li>
+<li>透明压缩</li>
+<li>内置加密</li>
+<li>灵活的 raid 配置，可以单独细致地分配 metadata 和 data（是的，虽然有点不可靠</li>
+<li>对新feature态度积极</li>
+</ul>
+</li>
+<li>
+<p>Disadvantages</p>
+<ul>
+<li>cow 有写放大和性能损失，想一想，一个塞满电影的NAS真的需要回溯功能吗</li>
+<li>raid 支持孱弱，wiki 明确警告使用 raid 5/6</li>
+<li>其他 raid 套件配合还差，因为 brtfs 被设计成了一个无所不包的体系，并不在乎如何和其他工具整合</li>
+<li>紧急 rescue 有巨大风险，几乎不可用</li>
+<li>断电脆弱</li>
+</ul>
+</li>
+</ul>
+<h3 id="zfs">zfs</h3>
+<hr>
+<p>zfs 依然是目前口碑最好的文件系统，只有一个问题：并不是 linux 主线支持。这意味除了需要自己编译以外，你绝不能像我一样热爱 Pacman -Syu 体验最新内核。</p>
+<p>所以对我完全出局了。</p>
+<p>但 zfs 的确是伟大的文件系统——只要你愿意用 freebsd 。 brtfs 一直以来都把 zfs 看作主要的对手和先驱，zfs 提供了几乎所有称之为现代文件系统的特性——raid checksum cow 还有令人称道的定期维护和激进的内存缓冲。</p>
+<p>老实说，因为我用的都是二手垃圾盘我真的很眼馋一个能够定期用 checksum 去检查数据的东西。</p>
+<ul>
+<li>
+<p>Advantages</p>
+<ul>
+<li>可靠，稳健，你永远可以相信zfs</li>
+<li>面向未来，重新定义什么叫做现代文件分区</li>
+<li>商业级维护</li>
+<li>定期自我维护，积极检查坏块</li>
+<li>激进的内存缓冲，性能不错</li>
+<li>全套工具，集成 raid 管理</li>
+</ul>
+</li>
+<li>
+<p>Disadvantages</p>
+<ul>
+<li>openzfs 对新内核支持较差</li>
+<li>对内存占用较多，较为重量级</li>
+<li>raid 增加盘位不如 brtfs 灵活</li>
+</ul>
+</li>
+</ul>
+<h3 id="ext4xfs">ext4,xfs</h3>
+<hr>
+<p>凑合用吧，要啥自行车。</p>
+<p>我在用。</p>
+<h2 id="2-卷管理工具">2. 卷管理工具</h2>
+<hr>
+<h3 id="lvm">lvm</h3>
+<p>主流卷管理全家桶，啥都有，最常用的功能就是 jbod</p>
+<h3 id="mdadm">mdadm</h3>
+<p>主流软 raid 实现，正在用。没啥好抱怨的，能用，靠谱，但是状态不是很直观。</p>
+<p>我在用。</p>
+<h2 id="3-ssd-cache">3. ssd cache</h2>
+<h3 id="bcache">bcache</h3>
+<p>FB 家的新鲜玩意儿，但是很少看到其他家用，需要写入超级块所以和 brtfs 不大兼容,性能比 lvmcache 强，作者最近跑去开发 bcachefs 了，所以维护比较懒了。</p>
+<p>我在用。</p>
+<h3 id="lvmcache">lvmcache</h3>
+<p>LVM全家桶，泛用性好，性能差。</p>
+<h1 id="结">结</h1>
+<p>目前在用的架构
+<img src="/static/mount-point.jpg" alt="mount-point"></p>
+<h1 id="转to-do">转（To do</h1>
+<p>尽管琢磨了不少多盘文件系统的事情，最近却在研究重新放弃 raid 。</p>
+<p>重要的文档数据做了云备份之后，电影啊动漫啊之类的大类数据实在没必要 raid 。</p>
+</div>
+
+
+    </main>
+
+    
+      
+    
+  </body>
+</html>
