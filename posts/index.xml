@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on Namaketa</title>
+    <link>http://192.168.1.66:1313/posts/</link>
+    <description>Recent content in Posts on Namaketa</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Sat, 20 Nov 2021 17:16:29 +0800</lastBuildDate><atom:link href="http://192.168.1.66:1313/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Hello World!</title>
+      <link>http://192.168.1.66:1313/posts/first/</link>
+      <pubDate>Sat, 20 Nov 2021 17:16:29 +0800</pubDate>
+      
+      <guid>http://192.168.1.66:1313/posts/first/</guid>
+      <description>是时候写blog了！</description>
+    </item>
+    
+  </channel>
+</rss>
